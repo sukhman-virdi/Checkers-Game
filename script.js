@@ -85,5 +85,3 @@ function drawCircle(x, y, r, color)
     ctx.arc(x, y, r, 0, 2*Math.PI);
     ctx.fill();
 }
-
-
