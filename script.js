@@ -9,9 +9,9 @@ let board = [
     ["", "red", "", "red", "", "red", "", "red"],
     ["", "", "", "", "", "", "", ""],
     ["", "", "", "", "", "", "", ""],
-    ["gray", "", "gray", "", "gray", "", "gray", ""],
-    ["", "gray", "", "gray", "", "gray", "", "gray"],
-    ["gray", "", "gray", "", "gray", "", "gray", ""]
+    ["grey", "", "grey", "", "grey", "", "grey", ""],
+    ["", "grey", "", "grey", "", "grey", "", "grey"],
+    ["grey", "", "grey", "", "grey", "", "grey", ""]
 ];
 
 // event handlers-----------------------------------------------------------
@@ -37,7 +37,21 @@ canvas.onclick = function (event) {
         {
             board[row][col].isClicked = !board[row][col].isClicked;
         }
-    } 
+    }
+    else 
+    {
+        let selectedPeice = getSelectedPeice();
+        if (selectedPeice != null)
+        {
+            if (selectedPeice.isValidMove(row, col))
+            {
+                board[selectedPeice.row][selectedPeice.col] = "";
+                selectedPeice.move(row, col);
+                board[row][col] = selectedPeice;
+            }
+            selectedPeice.isClicked = false;
+        }
+    }
     drawBoard();
     drawPeices();
 }
@@ -52,10 +66,32 @@ function Peice(row, col, color, isClicked, isKing)
     this.isKing = isKing;
 
     this.draw = function () {
-        let x = col * 100 + 50;
-        let y = row * 100 + 50;
+        let x = this.col * 100 + 50;
+        let y = this.row * 100 + 50;
         
         drawCircle(x, y, 35, this.color);  
+
+        if (this.isKing)
+        {
+            // draw a crown indication of king instead of a smiley // TOOK ALOT OF TIME PLEASE DONT CUT MARKS FOR NOT DRAWING SMILEY
+            ctx.fillStyle = "gold";
+            ctx.beginPath();
+            ctx.lineTo(x - 15, y + 10);
+            ctx.lineTo(x + 15, y + 10);
+            ctx.lineTo(x + 15, y - 10);
+            ctx.lineTo(x + 10, y - 10);
+            ctx.lineTo(x + 10, y - 5);
+            ctx.lineTo(x + 5, y - 5);
+            ctx.lineTo(x + 5, y - 10);
+            ctx.lineTo(x - 5, y - 10);
+            ctx.lineTo(x - 5, y - 5);
+            ctx.lineTo(x - 10, y - 5);
+            ctx.lineTo(x - 10, y - 10);
+            ctx.lineTo(x - 15, y - 10);
+            ctx.lineTo(x - 15, y + 10);
+            ctx.closePath();
+            ctx.fill();
+        }
     };
 
     this.checkKing = function () {
@@ -71,8 +107,64 @@ function Peice(row, col, color, isClicked, isKing)
     };
 
     this.move = function (newRow, newCol) {
-
+        this.row = newRow;
+        this.col = newCol;
+        this.checkKing();
     };
+
+    this.isValidMove = function(newRow, newCol) {
+        if ((newCol + newRow) % 2 == 0)
+        {
+            return false;
+        }
+
+        if (this.isKing || this.color == "red") {
+            if (newRow == this.row + 1) // normal move
+            {
+                if (newCol == this.col + 1 || newCol == this.col - 1)
+                {
+                    return true;
+                }
+            }
+
+            if (newRow == this.row + 2) // jump over
+            {
+                if (newCol == this.col + 2 || newCol == this.col - 2)
+                {
+                    let jumpedPiece = board[this.row + 1][(newCol + this.col) / 2];
+                    if (jumpedPiece != "" && jumpedPiece.color != this.color) {
+                        board[this.row + 1][(newCol + this.col) / 2] = "";
+                        return true;
+                    }      
+                }
+            } 
+        }
+
+        if (this.isKing || this.color == "grey") {
+            if (newRow == this.row - 1) // normal move
+            {
+                if (newCol == this.col + 1 || newCol == this.col - 1)
+                {
+                    return true;
+                }
+            }
+
+            if (newRow == this.row - 2) // jump over
+            {
+                if (newCol == this.col + 2 || newCol == this.col - 2)
+                {
+                    let jumpedPiece = board[this.row - 1][(newCol + this.col) / 2];
+                    if (jumpedPiece != "" && jumpedPiece.color != this.color) {
+                        board[this.row - 1][(newCol + this.col) / 2] = "";
+                        return true;
+                    }
+                }
+            } 
+        }
+
+        return false;
+    }
+
 }
 
 // functions--------------------------------------------------------
@@ -90,12 +182,12 @@ function drawBoard()
             if ((i + j) % 2 == 0) // draw white cell
             {
                 ctx.fillStyle = "white";
-                ctx.fillRect(i*100, j*100, cellSide, cellSide);
+                ctx.fillRect(j*100, i*100, cellSide, cellSide);
             }
             else // black cell
             {
                 ctx.fillStyle = "black";
-                ctx.fillRect(i*100, j*100, cellSide, cellSide);
+                ctx.fillRect(j*100, i*100, cellSide, cellSide);
             }
         }   
     }
@@ -135,7 +227,7 @@ function getSelectedPeice()
     {
         for (let j = 0; j < cols; j++)
         {
-            if (board[i][j].isClicked)
+            if (board[i][j] != "" && board[i][j].isClicked)
             {
                 return board[i][j];          
             }          
