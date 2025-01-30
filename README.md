@@ -33,9 +33,6 @@ A simple Checkers game implemented in JavaScript using the HTML5 Canvas API.
 - JavaScript
 - Canvas API
 
-## Credits
-Created by Sukhmanpreet Singh, Sukhman Singh, and Tejasavdeep Singh.
-
 ## License
 This project is open-source and available under the MIT License.
 
